@@ -1,0 +1,62 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+ 
+ 
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+ 
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prod-node-exporter'
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/ssl/node_exporter.crt
+      key_file: /etc/prometheus/ssl/node_exporter.key
+      server_name: "prod"
+      insecure_skip_verify: true
+    basic_auth:
+      username: prometheus
+      password: 12356789
+    static_configs:
+     #监听的地址
+     - targets: ['${PROD_NODE_EXPORT_IP_1}','${PROD_NODE_EXPORT_IP_2}']
+
+  - job_name: 'uat-node-exporter'
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/ssl/node_exporter.crt
+      key_file: /etc/prometheus/ssl/node_exporter.key
+      server_name: "uat"
+      insecure_skip_verify: true
+    basic_auth:
+      username: prometheus
+      password: 12356789
+    static_configs:
+     #监听的地址
+     - targets: ['${UAT_NODE_EXPORT_IP_1}','${UAT_NODE_EXPORT_IP_2}']
+     
+  - job_name: 'sit-node-exporter'
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/ssl/node_exporter.crt
+      key_file: /etc/prometheus/ssl/node_exporter.key
+      server_name: "sit"
+      insecure_skip_verify: true
+    basic_auth:
+      username: prometheus
+      password: 12356789
+    static_configs:
+     #监听的地址
+     - targets: ['${SIT_NODE_EXPORT_IP_1}','${SIT_NODE_EXPORT_IP_2}']
+   
+  - job_name: 'local-node-exporter'
+    static_configs:
+     #监听的地址
+     - targets: ['192.168.0.22:29100']
