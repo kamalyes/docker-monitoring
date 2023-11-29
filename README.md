@@ -19,7 +19,7 @@ wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_e
 tar xvf node_exporter-1.7.0.darwin-amd64.tar.gz
 mv node_exporter-1.7.0.darwin-amd64/ /usr/local/node_exporter/
 
-cat <<END> /usr/lib/systemd/system/node_exporter.service
+cat <<END> /etc/systemd/system/node_exporter.service
 [Unit]
 Description=node_exporter
 Documentation=https://github.com/prometheus/node_exporter
@@ -62,9 +62,9 @@ tls_server_config:
 最后：启动并设置开机自启
 
 ```bash
-systemctl daemon-reload 
-systemctl start node_exporter
+systemctl daemon-reload
 systemctl enable node_exporter
+systemctl start node_exporter
 systemctl status node_exporter.service
 ```
 
