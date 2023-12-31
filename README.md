@@ -4,8 +4,8 @@
 
 ```bash
 # 我这里直接下载最新-0.17.0版本的包了
-[root@k8s-master ~]# wget -O node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.darwin-amd64.tar.gz
-[root@k8s-master ~]# tar xvzf node_exporter-1.7.0.darwin-amd64.tar.gz && mv node_exporter-1.7.0.darwin-amd64/ /usr/local/node_exporter/ && cd /usr/local/node_exporter
+[root@k8s-master ~]# wget -O node_exporter.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+[root@k8s-master ~]# tar xvzf node_exporter-1.7.0.linux-amd64.tar.gz && mv node_exporter-1.7.0.linux-amd64/ /usr/local/node_exporter/ && cd /usr/local/node_exporter
 ```
 
 或使用以下脚本直接运行也可
@@ -15,24 +15,29 @@
 #!/bin/bash
 groupadd -r prometheus
 useradd -r -g prometheus -s /sbin/nologin -M -c "prometheus Daemons" prometheus
-wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.darwin-amd64.tar.gz
+wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
 tar xvf node_exporter-1.7.0.darwin-amd64.tar.gz
 mv node_exporter-1.7.0.darwin-amd64/ /usr/local/node_exporter/
-
+chown -R prometheus.prometheus /usr/local/node_exporter/
 cat <<END> /usr/lib/systemd/system/node_exporter.service
 [Unit]
 Description=node_exporter
 Documentation=https://github.com/prometheus/node_exporter
 After=network.target
+
 [Service]
+User=prometheus
+Group=prometheus
 ExecStart=/usr/local/node_exporter/node_exporter --web.config.file=/usr/local/node_exporter/config.yml --web.listen-address=:29100 --collector.systemd --collector.systemd.unit-whitelist=(sshd|nginx).service --collector.processes --collector.tcpstat
 Restart=on-failure
+
 [Install]
 WantedBy=multi-user.target
 END
-EOF
 chmod +x install_node_exporter.sh
 sh install_node_exporter.sh
+chmod o+w /etc/systemd/system/node_exporter.service
+chmod o+w /usr/local/node_exporter/node_exporter
 ```
 
 第二步：基于Basic Auth 配置Prometheus访问用户名&密码
@@ -62,9 +67,9 @@ tls_server_config:
 最后：启动并设置开机自启
 
 ```bash
-systemctl daemon-reload 
-systemctl start node_exporter
+systemctl daemon-reload
 systemctl enable node_exporter
+systemctl start node_exporter
 systemctl status node_exporter.service
 ```
 
@@ -90,6 +95,5 @@ scrape_configs:
       password: 12356789
     static_configs:
      #监听的地址
-     - targets: ['${PROD_NODE_EXPORT_IP_1}','${PROD_NODE_EXPORT_IP_2}']
+     - targets: ['${PROD_NODE_EXPORT_IP_1}:${PORT}','${PROD_NODE_EXPORT_IP_2}:{PORT}']
 ```
-
